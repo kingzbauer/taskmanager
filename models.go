@@ -1,4 +1,4 @@
-package models
+package main
 
 // Task represents a single runnable command
 type Task struct {
