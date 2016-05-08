@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+
 	valid "github.com/asaskevich/govalidator"
 	"gopkg.in/yaml.v2"
 	"os/exec"
@@ -34,6 +36,19 @@ func NewProjectFromFile(fileContents []byte) *Project {
 // Validate checks whether the model is valid
 func (project Project) Validate() (bool, error) {
 	return valid.ValidateStruct(project)
+}
+
+func (project *Project) init() {
+	// update the working directory if provided
+	if len(project.WorkingDir) > 0 {
+		os.Chdir(project.WorkingDir)
+	}
+
+	// initialize the tasks
+	// TODO: do LookPath for each of the tasks
+	for i := range project.Tasks {
+		project.Tasks[i].init()
+	}
 }
 
 // Validate checks whether the model is valid
