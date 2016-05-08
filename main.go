@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"io/ioutil"
 )
 
@@ -20,5 +19,8 @@ func main() {
 
 	// create a project
 	project := NewProjectFromFile(contents)
-	fmt.Fprint(writerFunc(stdout), project)
+	// validate the models
+	if valid, err := project.Validate(); !valid {
+		handleError(err, true)
+	}
 }

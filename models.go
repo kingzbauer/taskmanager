@@ -1,22 +1,25 @@
 package main
 
 import (
+	valid "github.com/asaskevich/govalidator"
 	"gopkg.in/yaml.v2"
+	"os/exec"
 )
 
 // Task represents a single runnable command
 type Task struct {
-	Name    string   `yaml:"name"`
-	Command string   `yaml:"command"`
-	Args    []string `yaml:"args"`
-	Dir     string   `yaml:"dir"`
+	Name    string    `yaml:"name"`
+	Command string    `yaml:"command" valid:"required"`
+	Args    []string  `yaml:"args"`
+	Dir     string    `yaml:"dir"`
+	Cmd     *exec.Cmd `yaml:"-"`
 }
 
 // Project identifies a single running instance of the listed tasks
 type Project struct {
 	Name       string `yaml:"project"`
 	WorkingDir string `yaml:"working_dir"`
-	Tasks      []Task `yaml:"tasks"`
+	Tasks      []Task `yaml:"tasks" valid:"required"`
 }
 
 // NewProjectFromFile creates a new project from the contents of a file
@@ -26,4 +29,24 @@ func NewProjectFromFile(fileContents []byte) *Project {
 	handleError(err, true)
 
 	return project
+}
+
+// Validate checks whether the model is valid
+func (project Project) Validate() (bool, error) {
+	return valid.ValidateStruct(project)
+}
+
+// Validate checks whether the model is valid
+func (task Task) Validate() (bool, error) {
+	return valid.ValidateStruct(task)
+}
+
+func (task *Task) init() {
+	// initialiaze the command struct
+	task.Cmd = exec.Command(task.Command, task.Args...)
+	// set the stdout and stderr
+	task.Cmd.Stderr = writerFunc(stderr)
+	task.Cmd.Stdout = writerFunc(stdout)
+	// set the working directory of the command
+	task.Cmd.Dir = task.Dir
 }
