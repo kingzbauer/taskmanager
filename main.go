@@ -20,5 +20,5 @@ func main() {
 
 	// create a project
 	project := NewProjectFromFile(contents)
-	fmt.Println(project)
+	fmt.Fprint(writerFunc(stdout), project)
 }
