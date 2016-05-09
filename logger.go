@@ -33,6 +33,10 @@ func stderr(data []byte) (n int, err error) {
 	return fmt.Fprint(os.Stderr, msg)
 }
 
+func errString(str string) {
+	stderr([]byte(str))
+}
+
 func stdout(data []byte) (n int, err error) {
 	defer lock.Unlock()
 
@@ -40,4 +44,8 @@ func stdout(data []byte) (n int, err error) {
 	lock.Lock()
 
 	return fmt.Fprint(os.Stdout, msg)
+}
+
+func outputString(str string) {
+	stdout([]byte(str))
 }
