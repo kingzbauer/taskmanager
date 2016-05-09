@@ -1,9 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
+	"fmt"
 	"github.com/fatih/color"
 	"sync"
 )

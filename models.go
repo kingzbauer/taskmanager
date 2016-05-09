@@ -1,11 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"sync"
 
-	"fmt"
 	valid "github.com/asaskevich/govalidator"
 	"gopkg.in/yaml.v2"
 )
@@ -16,6 +16,7 @@ type Task struct {
 	Command string    `yaml:"command" valid:"required"`
 	Args    []string  `yaml:"args"`
 	Dir     string    `yaml:"dir"`
+	Tags    []string  `yaml:"tags"`
 	Cmd     *exec.Cmd `yaml:"-"`
 	project *Project
 }
@@ -26,14 +27,21 @@ type Project struct {
 	WorkingDir string `yaml:"working_dir"`
 	Tasks      []Task `yaml:"tasks" valid:"required"`
 	wg         *sync.WaitGroup
+	tags       []string
 }
 
 // NewProjectFromFile creates a new project from the contents of a file
-func NewProjectFromFile(fileContents []byte) *Project {
+func NewProjectFromFile(fileContents []byte, tags []string) *Project {
 	project := new(Project)
 	err := yaml.Unmarshal(fileContents, project)
 	handleError(err, true)
 
+	project.tags = tags
+
+	// if any tags have been specified, filter out tasks with the given tags
+	if len(tags) > 0 {
+		project.Tasks = filterTasksOnTags(project.Tasks, tags)
+	}
 	return project
 }
 
@@ -90,8 +98,8 @@ func (task *Task) init(project *Project) {
 	// initialiaze the command struct
 	task.Cmd = exec.Command(task.Command, task.Args...)
 	// set the stdout and stderr
-	task.Cmd.Stderr = writerFunc(stderr)
-	task.Cmd.Stdout = writerFunc(stdout)
+	task.Cmd.Stderr = os.Stderr
+	task.Cmd.Stdout = os.Stdout
 	// set the working directory of the command
 	task.Cmd.Dir = task.Dir
 }
@@ -110,9 +118,28 @@ func (task *Task) Start() {
 	// wait for the task to finish
 	if err := task.Cmd.Wait(); err != nil {
 		handleError(err, false)
-		fmt.Println("waiting error")
 		return
 	}
 
 	outputString(fmt.Sprintf("Task [%s] has exited", task.Name))
+}
+
+func (task *Task) hasTag(tag string) bool {
+	for _, ownTag := range task.Tags {
+		if ownTag == tag {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (task *Task) containsTag(tags []string) bool {
+	for _, tag := range tags {
+		if task.hasTag(tag) {
+			return true
+		}
+	}
+
+	return false
 }

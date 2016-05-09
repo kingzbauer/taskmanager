@@ -5,13 +5,19 @@ import (
 	"io/ioutil"
 	"os"
 	"os/signal"
+	"regexp"
+	"strings"
 	"syscall"
 )
 
-var taskfile string
+var (
+	taskfile string
+	tags     string
+)
 
 func init() {
 	flag.StringVar(&taskfile, "taskfile", "tasks.yml", "path to your tasks file")
+	flag.StringVar(&tags, "tags", "", "a list of tags separated with commans")
 }
 
 func main() {
@@ -24,8 +30,15 @@ func main() {
 	contents, err := ioutil.ReadFile(taskfile)
 	handleError(err, true)
 
+	// Retrieve and process tags if any
+	processedTags := strings.Split(
+		regexp.MustCompile("\\s+").ReplaceAllString(tags, ""), ",")
+	if len(tags) == 0 {
+		processedTags = []string{}
+	}
+
 	// create a project
-	project := NewProjectFromFile(contents)
+	project := NewProjectFromFile(contents, processedTags)
 	// validate the models
 	if valid, err := project.Validate(); !valid {
 		handleError(err, true)
