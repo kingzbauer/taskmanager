@@ -1,3 +1,6 @@
+**BETA**
+A simple tool to keep track of you running tasks on terminal e.g multiple gulp or npm projects.
+
 ## Structure of the tasks.yaml
 ```ymal
 ---
