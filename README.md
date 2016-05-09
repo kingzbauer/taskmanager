@@ -1,5 +1,6 @@
 ## Structure of the tasks.yaml
 ```ymal
+---
 project: what is the overall name of the project
 working_dir: what directory to be used as the working directory
 tasks: # now contains the tasks that should be run concurrently
@@ -8,6 +9,7 @@ tasks: # now contains the tasks that should be run concurrently
 	  args: [arg1, arg2, arg3]
 	  dir: can be relative to working_dir or absolute
 	  tags: [tag1, tag2]
+...
 ```
 
 #### Example yml file
@@ -31,6 +33,7 @@ tasks:
 	  tags:
 		  - users
 		  - ongoing
+...
 ```
 
 `taskmanager --taskfile mytasks.yml --tags "new, users"`
