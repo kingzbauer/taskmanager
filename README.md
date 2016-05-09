@@ -40,4 +40,7 @@ tasks:
 ...
 ```
 
+Taskfile defaults to tasks.yml, if named differently pass `--taskfile`
+
 `taskmanager --taskfile mytasks.yml --tags "new, users"`
+
